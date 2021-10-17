@@ -126,21 +126,31 @@ class ButtonMenu extends events_1.EventEmitter {
             this.buttonCollector.stop();
         }
     }
+    stopWithoutClearingButtons() {
+        if (this.buttonCollector) {
+            this.buttonCollector.stop("clear");
+        }
+    }
     /**
      * Delete the menu message.
      */
     async delete() {
+        if (this.menu) {
+            await this.menu.delete();
+            //for some reason this shit doesn't set itself to true automatically after deleting the message, we'll do it for them
+            this.menu.deleted = true;
+        }
         if (this.buttonCollector)
             this.buttonCollector.stop();
-        if (this.menu)
-            await this.menu.delete();
     }
     /**
      * Remove all reactions from the menu message.
      */
-    clearButtons() {
-        if (this.menu) {
-            return this.menu.edit({ embeds: [this.currentPage.content], components: [] });
+    async clearButtons() {
+        //if the menu is deleted, we cant set it's components to nothing because it doesnt exist anymore and we would
+        //get the unknown message error from discord
+        if (!this.menu.deleted) {
+            return await this.menu.edit({ embeds: [this.currentPage.content], components: [] });
         }
     }
     async setPage(page = 0) {
@@ -167,21 +177,23 @@ class ButtonMenu extends events_1.EventEmitter {
     addButtons() {
         this.buttons = [];
         for (const btn of this.currentPage.buttons) {
-            this.buttons.push(btn[0]);
+            this.buttons.push(btn);
         }
     }
     /**
      * Start a reaction collector and switch pages where required.
      */
     awaitButtons() {
-        this.buttonCollector = new discord_js_1.InteractionCollector(client, { filter: (i) => i.member.user.id === this.userID && i.isButton(), idle: 180000 });
+        this.buttonCollector = new discord_js_1.InteractionCollector(client, { filter: (i) => i.member.user.id === this.userID && i.isButton(), idle: 180000, });
         // this.menu.createButtonCollector((button: { clicker: { id: any; }; }) => button.clicker.id === this.userID, { idle: this.ms })
         //@ts-ignore
-        this.buttonCollector.on("end", (i) => {
-            return this.clearButtons();
+        this.buttonCollector.on("end", (i, reason) => {
+            if (reason != "clear")
+                return this.clearButtons();
         });
         this.buttonCollector.on('collect', async (i) => {
             let buttonIndex;
+            //@ts-ignore
             buttonIndex = this.currentPage.buttons.findIndex(btn => btn.buttonOption.customId == i.customId);
             if (buttonIndex != -1) {
                 if (typeof this.currentPage.buttons[buttonIndex].callback === 'function') {
@@ -276,24 +288,33 @@ class Menu extends events_1.EventEmitter {
     stop() {
         if (this.buttonCollector) {
             this.buttonCollector.stop();
-            this.clearButtons();
+        }
+    }
+    stopWithoutClearingButtons() {
+        if (this.buttonCollector) {
+            this.buttonCollector.stop("clear");
         }
     }
     /**
      * Delete the menu message.
      */
     async delete() {
+        if (this.menu) {
+            await this.menu.delete();
+            //for some reason this shit doesn't set itself to true automatically after deleting the message, we'll do it for them
+            this.menu.deleted = true;
+        }
         if (this.buttonCollector)
             this.buttonCollector.stop();
-        if (this.menu)
-            await this.menu.delete();
     }
     /**
      * Remove all reactions from the menu message.
      */
-    clearButtons() {
-        if (this.menu) {
-            return this.menu.edit({ embeds: [this.currentPage.content], components: [] });
+    async clearButtons() {
+        //if the menu is deleted, we cant set it's components to nothing because it doesnt exist anymore and we would
+        //get the unknown message error from discord
+        if (!this.menu.deleted) {
+            return await this.menu.edit({ embeds: [this.currentPage.content], components: [] });
         }
     }
     /**
@@ -330,8 +351,9 @@ class Menu extends events_1.EventEmitter {
         this.buttonCollector = new discord_js_1.InteractionCollector(client, { filter: (i) => i.member.user.id == this.userID && i.isSelectMenu(), idle: 180000 });
         // this.menu.createMenuCollector((button: { clicker: { id: any; }; }) => button.clicker.id === this.userID, { idle: this.ms })
         //@ts-ignore
-        this.buttonCollector.on('end', (i) => {
-            return this.clearButtons();
+        this.buttonCollector.on('end', (i, reason) => {
+            if (reason != "clear")
+                return this.clearButtons();
         });
         this.buttonCollector.on('collect', async (i) => {
             // If the name exists, prioritise using that, otherwise, use the ID. If neither are in the list, don't run anything.
