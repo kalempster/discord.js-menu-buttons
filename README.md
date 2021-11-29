@@ -12,121 +12,117 @@ about not working intelisense.
 ```typescript
 
 
-        const buttonMenu = new ButtonMenu(message.channel, message.author.id, [
+const buttonMenu = new ButtonMenu(message.channel, message.author.id, [
+    {
+        name: "page1",
+        content: new MessageEmbed().setTitle("Hey!"),
+        buttons: [
             {
-                name: "page1",
-                content: new MessageEmbed().setTitle("Hey!"),
-                buttons: [
-                    {
-                        buttonOption: {
-                            label: "Hey this is the first option!",
-                            customId: "thishastobedifferentforeachbutton",
-                            style: "PRIMARY",
-                            type: "BUTTON",
-                            emoji: "ℹ"
-                        },
-                        callback: "page2" //here you can type in a string to get to another page or a function to execute code after clicking
-                    }
-                ]
+                buttonOption: {
+                    label: "Hey this is the first option!",
+                    customId: "thishastobedifferentforeachbutton",
+                    style: "PRIMARY",
+                    type: "BUTTON",
+                    emoji: "ℹ"
+                },
+                callback: "page2" //here you can type in a string to get to another page or a function to execute code after clicking
+            }
+        ]
+    },
+    {
+        name: "page2",
+        content: new MessageEmbed().setTitle("Second page!"),
+        buttons: [
+            {
+                buttonOption: {
+                    label: "Go back!",
+                    customId: "thishastobedifferentforeachbutton",
+                    style: "DANGER",
+                    type: "BUTTON",
+                    emoji: "ℹ"
+                },
+                callback: "previous" //you can have multiple keywords to operate those pages for example previousm, first, last, 
             },
             {
-                name: "page2",
-                content: new MessageEmbed().setTitle("Second page!"),
-                buttons: [
-                    {
-                        buttonOption: {
-
-                            label: "Go back!",
-                            customId: "thishastobedifferentforeachbutton",
-                            style: "DANGER",
-                            type: "BUTTON",
-                            emoji: "ℹ"
-
-                        },
-                        callback: "previous" //you can have multiple keywords to operate those pages for example previousm, first, last, 
-                    },
-                    {
-                        buttonOption: {
-                            label: "Hey this is the second option of the second page!",
-                            customId: "thishastobedifferentforeachbutton1",
-                            style: "DANGER",
-                            type: "BUTTON",
-                            emoji: "ℹ"
-                        },
-                        callback: (i) => {  //here you can type in a string to get to another page or a function to execute code after clicking
-                            i.deferUpdate() //it tells discord that the interaction was successful
-                            message.reply("Hey it's me from the code!");
-                            console.log(i.member.user.username);
-                            
-                        }
-                    }
-                ]
+                buttonOption: {
+                    label: "Hey this is the second option of the second page!",
+                    customId: "thishastobedifferentforeachbutton1",
+                    style: "DANGER",
+                    type: "BUTTON",
+                    emoji: "ℹ"
+                },
+                callback: (i) => {  //here you can type in a string to get to another page or a function to execute code after clicking
+                    i.deferUpdate() //it tells discord that the interaction was successful
+                    message.reply("Hey it's me from the code!");
+                    console.log(i.member.user.username);
+                    
+                }
             }
-        ])
-
-        buttonMenu.start();
+        ]
+    }
+])
+buttonMenu.start();
 ```
 
 # Select menu
 ```typescript
 const selectMenu = new Menu(message.channel, message.author.id, [
-            {
-                name: "page1",
-                content: new MessageEmbed().setTitle("Hey!"),
-                buttons: [
-                    {
-                        listOption: {
-                            label: "option1",
-                            value: "value1",
-                            description: "here's a description",
-                            emoji: "😁"
-                        },
-                        callback: "page2"
-                    },
-                    {
-                        listOption: {
-                            label: "option2",
-                            value: "value2",
-                            description: "here's a description2",
-                            emoji: "😃"
-                        },
-                        callback: (i) => {
-                            i.deferUpdate(); 
-                            console.log(i.values[0]); //value2
-                        }
-                    }
-                ]
+{
+    name: "page1",
+    content: new MessageEmbed().setTitle("Hey!"),
+    buttons: [
+        {
+            listOption: {
+                label: "option1",
+                value: "value1",
+                description: "here's a description",
+                emoji: "😁"
             },
-            {
-                name: "page2",
-                content: new MessageEmbed().setTitle("Hey2!"),
-                buttons: [
-                    {
-                        listOption: {
-                            label: "option1",
-                            value: "value1",
-                            description: "here's a description",
-                            emoji: "😁"
-                        },
-                        callback: "previous"
-                    },
-                    {
-                        listOption: {
-                            label: "option2",
-                            value: "value2",
-                            description: "here's a description2",
-                            emoji: "😃"
-                        },
-                        callback: (i) => {
-                            i.deferUpdate(); 
-                            console.log(i.values[0]); //value2
-                        }
-                    }
-                ]
+            callback: "page2"
+        },
+        {
+            listOption: {
+                label: "option2",
+                value: "value2",
+                description: "here's a description2",
+                emoji: "😃"
+            },
+            callback: (i) => {
+                i.deferUpdate(); 
+                console.log(i.values[0]); //value2
             }
-        ])
-
-        selectMenu.start();
+        }
+    ]
+},
+{
+    name: "page2",
+    content: new MessageEmbed().setTitle("Hey2!"),
+    buttons: [
+        {
+            listOption: {
+                label: "option1",
+                value: "value1",
+                description: "here's a description",
+                emoji: "😁"
+            },
+            callback: "previous"
+        },
+        {
+            listOption: {
+                label: "option2",
+                value: "value2",
+                description: "here's a description2",
+                emoji: "😃"
+            },
+            callback: (i) => {
+                i.deferUpdate(); 
+                console.log(i.values[0]); //value2
+            }
+        }
+    ]
+}
+])
+selectMenu.start();
 ```
 
 ### Using both
