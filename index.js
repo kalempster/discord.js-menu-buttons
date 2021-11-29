@@ -115,7 +115,12 @@ class ButtonMenu extends events_1.EventEmitter {
         for (const button of this.buttons) {
             components.push(button.buttonOption);
         }
-        this.menu = await this.channel.send({ embeds: [this.currentPage.content], components: [new discord_js_1.MessageActionRow().addComponents(components)] });
+        if (components.length > 0)
+            //@ts-ignore
+            this.menu = await this.channel.send({ embeds: [this.currentPage.content], components: [new discord_js_1.MessageActionRow().addComponents(components)] }).catch(console.log);
+        else
+            //@ts-ignore    
+            this.menu = await this.channel.send({ embeds: [this.currentPage.content] }).catch(console.log);
         this.awaitButtons();
     }
     /**
@@ -136,7 +141,7 @@ class ButtonMenu extends events_1.EventEmitter {
      */
     async delete() {
         if (this.menu) {
-            await this.menu.delete();
+            await this.menu.delete().catch(console.log);
             //for some reason this shit doesn't set itself to true automatically after deleting the message, we'll do it for them
             this.menu.deleted = true;
         }
@@ -150,7 +155,7 @@ class ButtonMenu extends events_1.EventEmitter {
         //if the menu is deleted, we cant set it's components to nothing because it doesnt exist anymore and we would
         //get the unknown message error from discord
         if (!this.menu.deleted) {
-            return await this.menu.edit({ embeds: [this.currentPage.content], components: [] });
+            return await this.menu.edit({ embeds: [this.currentPage.content], components: [] }).catch(console.log);
         }
     }
     async setPage(page = 0) {
@@ -165,10 +170,10 @@ class ButtonMenu extends events_1.EventEmitter {
             for (const button of this.buttons) {
                 components.push(button.buttonOption);
             }
-            this.menu.edit({ embeds: [this.currentPage.content], components: [new discord_js_1.MessageActionRow().addComponents(components)] });
+            this.menu.edit({ embeds: [this.currentPage.content], components: [new discord_js_1.MessageActionRow().addComponents(components)] }).catch(console.log);
         }
         else
-            this.menu.edit({ embeds: [this.currentPage.content], components: [] });
+            this.menu.edit({ embeds: [this.currentPage.content], components: [] }).catch(console.log);
         this.awaitButtons();
     }
     /**
@@ -189,7 +194,7 @@ class ButtonMenu extends events_1.EventEmitter {
         //@ts-ignore
         this.buttonCollector.on("end", (i, reason) => {
             if (reason != "clear")
-                return this.clearButtons();
+                return this.clearButtons().catch(console.log);
         });
         this.buttonCollector.on('collect', async (i) => {
             let buttonIndex;
@@ -279,7 +284,12 @@ class Menu extends events_1.EventEmitter {
         // TODO: Sort out documenting this as a TSDoc event.
         this.emit('pageChange', this.currentPage);
         this.addButtons();
-        this.menu = await this.channel.send({ embeds: [this.currentPage.content], components: [new discord_js_1.MessageActionRow().addComponents([this.buttonMenu])] });
+        if (this.buttonMenu.options.length > 0)
+            //@ts-ignore
+            this.menu = await this.channel.send({ embeds: [this.currentPage.content], components: [new discord_js_1.MessageActionRow().addComponents([this.buttonMenu])] }).catch(console.log);
+        else
+            //@ts-ignore
+            this.menu = await this.channel.send({ embeds: [this.currentPage.content] }).catch(console.log);
         this.awaitButtons();
     }
     /**
@@ -299,11 +309,11 @@ class Menu extends events_1.EventEmitter {
      * Delete the menu message.
      */
     async delete() {
-        if (this.menu) {
-            await this.menu.delete();
-            //for some reason this shit doesn't set itself to true automatically after deleting the message, we'll do it for them
-            this.menu.deleted = true;
-        }
+        if (!this.menu)
+            return;
+        await this.menu.delete().catch(console.log);
+        //for some reason this shit doesn't set itself to true automatically after deleting the message, we'll do it for them
+        this.menu.deleted = true;
         if (this.buttonCollector)
             this.buttonCollector.stop();
     }
@@ -311,10 +321,12 @@ class Menu extends events_1.EventEmitter {
      * Remove all reactions from the menu message.
      */
     async clearButtons() {
+        if (!this.menu)
+            return;
         //if the menu is deleted, we cant set it's components to nothing because it doesnt exist anymore and we would
         //get the unknown message error from discord
         if (!this.menu.deleted) {
-            return await this.menu.edit({ embeds: [this.currentPage.content], components: [] });
+            return await this.menu.edit({ embeds: [this.currentPage.content], components: [] }).catch(console.log);
         }
     }
     /**
@@ -322,6 +334,8 @@ class Menu extends events_1.EventEmitter {
      * @param {Number} page The index of the page the Menu should jump to.
      */
     async setPage(page = 0) {
+        if (!this.menu)
+            return;
         this.emit('pageChange', this.pages[page]);
         this.pageIndex = page;
         this.currentPage = this.pages[this.pageIndex];
@@ -329,10 +343,10 @@ class Menu extends events_1.EventEmitter {
         this.addButtons();
         if (this.buttonMenu.options.length != 0) {
             this.menu.components = [];
-            this.menu.edit({ embeds: [this.currentPage.content], components: [new discord_js_1.MessageActionRow().addComponents([this.buttonMenu])] });
+            this.menu.edit({ embeds: [this.currentPage.content], components: [new discord_js_1.MessageActionRow().addComponents([this.buttonMenu])] }).catch(console.log);
         }
         else
-            this.menu.edit({ embeds: [this.currentPage.content], components: [] });
+            this.menu.edit({ embeds: [this.currentPage.content], components: [] }).catch(console.log);
         this.awaitButtons();
     }
     /**
@@ -353,7 +367,7 @@ class Menu extends events_1.EventEmitter {
         //@ts-ignore
         this.buttonCollector.on('end', (i, reason) => {
             if (reason != "clear")
-                return this.clearButtons();
+                return this.clearButtons().catch(console.log);
         });
         this.buttonCollector.on('collect', async (i) => {
             // If the name exists, prioritise using that, otherwise, use the ID. If neither are in the list, don't run anything.

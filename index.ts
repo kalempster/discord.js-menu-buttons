@@ -1,4 +1,4 @@
-import { ButtonInteraction, SelectMenuInteraction, Client, MessageEmbed, MessageSelectOptionData, MessageButton, TextChannel, Message, InteractionCollector, MessageActionRow, MessageSelectMenu } from "discord.js";
+import { ButtonInteraction, SelectMenuInteraction, Client, MessageEmbed, MessageSelectOptionData, MessageButton, TextChannel, Message, InteractionCollector, MessageActionRow, MessageSelectMenu, TextBasedChannels } from "discord.js";
 import { EventEmitter } from "events"
 import { random } from "lodash"
 export type ButtonCallback = (btn: ButtonInteraction) => void
@@ -79,7 +79,7 @@ export class Page {
  */
 export class ButtonMenu extends EventEmitter {
 
-    channel: TextChannel;
+    channel: TextBasedChannels;
     userID: string;
     ms: number;
     pages: ButtonPage[];
@@ -88,7 +88,7 @@ export class ButtonMenu extends EventEmitter {
     buttons: MenuButton[];
     menu: Message;
     buttonCollector: InteractionCollector<ButtonInteraction>;
-    constructor(channel: TextChannel, userID: string, pages: ButtonPage[], ms = 180000) {
+    constructor(channel: TextBasedChannels, userID: string, pages: ButtonPage[], ms = 180000) {
         super()
         this.channel = channel
         this.userID = userID
@@ -131,7 +131,13 @@ export class ButtonMenu extends EventEmitter {
         for (const button of this.buttons) {
             components.push(button.buttonOption);
         }
-        this.menu = await this.channel.send({ embeds: [this.currentPage.content], components: [new MessageActionRow().addComponents(components)] });
+        if (components.length > 0)
+            //@ts-ignore
+            this.menu = await this.channel.send({ embeds: [this.currentPage.content], components: [new MessageActionRow().addComponents(components)] }).catch(console.log);
+        else
+            //@ts-ignore    
+            this.menu = await this.channel.send({ embeds: [this.currentPage.content] }).catch(console.log);
+
         this.awaitButtons();
     }
 
@@ -155,7 +161,7 @@ export class ButtonMenu extends EventEmitter {
      */
     async delete() {
         if (this.menu) {
-            await this.menu.delete();
+            await this.menu.delete().catch(console.log);
             //for some reason this shit doesn't set itself to true automatically after deleting the message, we'll do it for them
             this.menu.deleted = true;
         }
@@ -170,7 +176,7 @@ export class ButtonMenu extends EventEmitter {
         //if the menu is deleted, we cant set it's components to nothing because it doesnt exist anymore and we would
         //get the unknown message error from discord
         if (!this.menu.deleted) {
-            return await this.menu.edit({ embeds: [this.currentPage.content], components: [] });
+            return await this.menu.edit({ embeds: [this.currentPage.content], components: [] }).catch(console.log);
         }
     }
 
@@ -189,11 +195,11 @@ export class ButtonMenu extends EventEmitter {
             for (const button of this.buttons) {
                 components.push(button.buttonOption)
             }
-            this.menu.edit({ embeds: [this.currentPage.content], components: [new MessageActionRow().addComponents(components)] })
+            this.menu.edit({ embeds: [this.currentPage.content], components: [new MessageActionRow().addComponents(components)] }).catch(console.log)
 
         }
         else
-            this.menu.edit({ embeds: [this.currentPage.content], components: [] })
+            this.menu.edit({ embeds: [this.currentPage.content], components: [] }).catch(console.log)
 
         this.awaitButtons()
     }
@@ -218,7 +224,7 @@ export class ButtonMenu extends EventEmitter {
         //@ts-ignore
         this.buttonCollector.on("end", (i, reason: string) => {
             if (reason != "clear")
-                return this.clearButtons();
+                return this.clearButtons().catch(console.log);
         })
 
 
@@ -259,7 +265,7 @@ export class ButtonMenu extends EventEmitter {
                         this.delete()
                         break
                     default:
-                        this.setPage(this.pages.findIndex((p: ButtonPage) => p.name === this.currentPage.buttons[buttonIndex].callback))
+                        this.setPage(this.pages.findIndex((p: ButtonPage) => p.name === this.currentPage.buttons[buttonIndex].callback));
                         break
                 }
             }
@@ -269,7 +275,7 @@ export class ButtonMenu extends EventEmitter {
 
 export class Menu extends EventEmitter {
 
-    channel: TextChannel;
+    channel: TextBasedChannels;
     userID: string;
     ms: number;
     pages: Page[];
@@ -279,7 +285,7 @@ export class Menu extends EventEmitter {
     menu: Message;
     buttonCollector: InteractionCollector<SelectMenuInteraction>;
     buttonMenu: MessageSelectMenu;
-    constructor(channel: TextChannel, userID: string, pages: Page[], ms = 180000) {
+    constructor(channel: TextBasedChannels, userID: string, pages: Page[], ms = 180000) {
         super()
         this.channel = channel
         this.userID = userID
@@ -319,8 +325,13 @@ export class Menu extends EventEmitter {
         // TODO: Sort out documenting this as a TSDoc event.
         this.emit('pageChange', this.currentPage)
         this.addButtons();
+        if (this.buttonMenu.options.length > 0)
+            //@ts-ignore
+            this.menu = await this.channel.send({ embeds: [this.currentPage.content], components: [new MessageActionRow().addComponents([this.buttonMenu])] }).catch(console.log);
+        else
+            //@ts-ignore
+            this.menu = await this.channel.send({ embeds: [this.currentPage.content] }).catch(console.log);
 
-        this.menu = await this.channel.send({ embeds: [this.currentPage.content], components: [new MessageActionRow().addComponents([this.buttonMenu])] });
         this.awaitButtons();
     }
 
@@ -343,11 +354,11 @@ export class Menu extends EventEmitter {
      * Delete the menu message.
      */
     async delete() {
-        if (this.menu) {
-            await this.menu.delete();
-            //for some reason this shit doesn't set itself to true automatically after deleting the message, we'll do it for them
-            this.menu.deleted = true;
-        }
+        if (!this.menu) return;
+        await this.menu.delete().catch(console.log);
+        //for some reason this shit doesn't set itself to true automatically after deleting the message, we'll do it for them
+        this.menu.deleted = true;
+
         if (this.buttonCollector) this.buttonCollector.stop()
     }
 
@@ -355,10 +366,11 @@ export class Menu extends EventEmitter {
      * Remove all reactions from the menu message.
      */
     async clearButtons() {
+        if (!this.menu) return;
         //if the menu is deleted, we cant set it's components to nothing because it doesnt exist anymore and we would
         //get the unknown message error from discord
         if (!this.menu.deleted) {
-            return await this.menu.edit({ embeds: [this.currentPage.content], components: [] });
+            return await this.menu.edit({ embeds: [this.currentPage.content], components: [] }).catch(console.log);
         }
     }
 
@@ -367,6 +379,7 @@ export class Menu extends EventEmitter {
      * @param {Number} page The index of the page the Menu should jump to.
      */
     async setPage(page: number = 0) {
+        if (!this.menu) return;
         this.emit('pageChange', this.pages[page])
 
         this.pageIndex = page
@@ -376,10 +389,10 @@ export class Menu extends EventEmitter {
         this.addButtons()
         if (this.buttonMenu.options.length != 0) {
             this.menu.components = [];
-            this.menu.edit({ embeds: [this.currentPage.content], components: [new MessageActionRow().addComponents([this.buttonMenu])] })
+            this.menu.edit({ embeds: [this.currentPage.content], components: [new MessageActionRow().addComponents([this.buttonMenu])] }).catch(console.log);
         }
         else
-            this.menu.edit({ embeds: [this.currentPage.content], components: [] })
+            this.menu.edit({ embeds: [this.currentPage.content], components: [] }).catch(console.log);
         this.awaitButtons()
     }
 
@@ -387,6 +400,7 @@ export class Menu extends EventEmitter {
      * React to the new page with all of it's defined reactions
      */
     addButtons() {
+
         this.buttonMenu.options = [];
         for (const btn of this.currentPage.buttons) {
             this.buttonMenu.addOptions(btn.listOption);
@@ -402,7 +416,7 @@ export class Menu extends EventEmitter {
         //@ts-ignore
         this.buttonCollector.on('end', (i, reason: string) => {
             if (reason != "clear")
-                return this.clearButtons()
+                return this.clearButtons().catch(console.log);
         })
 
 
