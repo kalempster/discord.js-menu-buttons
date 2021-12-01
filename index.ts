@@ -12,7 +12,7 @@ let client: Client;
  * Initializes
  * @param {Client} c 
  */
-export default (c: Client) => {
+export function setClient(c: Client) {
     client = c;
 }
 
@@ -89,6 +89,7 @@ export class ButtonMenu extends EventEmitter {
     menu: Message;
     buttonCollector: InteractionCollector<ButtonInteraction>;
     constructor(channel: TextBasedChannels, userID: string, pages: ButtonPage[], ms = 180000) {
+        if (!client) throw new Error("Client hasn't been set");
         super()
         this.channel = channel
         this.userID = userID
@@ -286,6 +287,7 @@ export class Menu extends EventEmitter {
     buttonCollector: InteractionCollector<SelectMenuInteraction>;
     buttonMenu: MessageSelectMenu;
     constructor(channel: TextBasedChannels, userID: string, pages: Page[], ms = 180000) {
+        if (!client) throw new Error("Client hasn't been set");
         super()
         this.channel = channel
         this.userID = userID

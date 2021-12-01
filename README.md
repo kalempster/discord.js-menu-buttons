@@ -8,6 +8,17 @@ Using this package is quite simple and simmilar to the original so if you've use
 In this example I'm creating a menu that has 2 pages, "page 1" and "page 2". "page 1" has two buttons one for the bot to send a message saying hello
 and the other to move to page 2. All of the code will be in typescript (and I highly encourage you to use it). Everything in the bot is documented in typescript so you don't have to worry
 about not working intelisense.
+
+# Initializing
+The bot requires giving it a client variable since InteractionCollector needs it.
+To initialize the bot you have to execute the function named setClient
+```typescript
+import { Client, MessageEmbed } from "discord.js";
+import { ButtonMenu, setClient } from "discord.js-menu-buttons";
+const client = new Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
+setClient(client);
+```
+
 # ButtonMenu
 ```typescript
 

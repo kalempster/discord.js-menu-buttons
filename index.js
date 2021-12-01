@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Menu = exports.ButtonMenu = exports.Page = exports.MenuButton = exports.MenuOption = exports.ButtonPage = void 0;
+exports.Menu = exports.ButtonMenu = exports.Page = exports.MenuButton = exports.MenuOption = exports.ButtonPage = exports.setClient = void 0;
 const discord_js_1 = require("discord.js");
 const events_1 = require("events");
 const lodash_1 = require("lodash");
@@ -9,9 +9,10 @@ let client;
  * Initializes
  * @param {Client} c
  */
-exports.default = (c) => {
+function setClient(c) {
     client = c;
-};
+}
+exports.setClient = setClient;
 /**
  * A page object that the menu can display.
  */
@@ -78,6 +79,8 @@ class ButtonMenu extends events_1.EventEmitter {
     menu;
     buttonCollector;
     constructor(channel, userID, pages, ms = 180000) {
+        if (!client)
+            throw new Error("Client hasn't been set");
         super();
         this.channel = channel;
         this.userID = userID;
@@ -250,6 +253,8 @@ class Menu extends events_1.EventEmitter {
     buttonCollector;
     buttonMenu;
     constructor(channel, userID, pages, ms = 180000) {
+        if (!client)
+            throw new Error("Client hasn't been set");
         super();
         this.channel = channel;
         this.userID = userID;
