@@ -140,6 +140,19 @@ class ButtonMenu extends events_1.EventEmitter {
         }
     }
     /**
+       *
+       * @param pageIndex
+       * @param buttonIndex
+       * @param i A value to pass into the callback
+       * @returns
+       */
+    forceCallback(buttonIndex, i) {
+        if (typeof this.pages[this.currentPage.index].buttons[buttonIndex].callback != "function")
+            return;
+        //@ts-ignore
+        this.pages[this.currentPage.index].buttons[buttonIndex].callback(i);
+    }
+    /**
      * Delete the menu message.
      */
     async delete() {
@@ -192,7 +205,7 @@ class ButtonMenu extends events_1.EventEmitter {
      * Start a reaction collector and switch pages where required.
      */
     awaitButtons() {
-        this.buttonCollector = new discord_js_1.InteractionCollector(client, { filter: (i) => i.member.user.id === this.userID && i.isButton(), idle: 180000, });
+        this.buttonCollector = new discord_js_1.InteractionCollector(client, { filter: (i) => i.member.user.id === this.userID && i.isButton(), idle: this.ms, });
         // this.menu.createButtonCollector((button: { clicker: { id: any; }; }) => button.clicker.id === this.userID, { idle: this.ms })
         //@ts-ignore
         this.buttonCollector.on("end", (i, reason) => {
@@ -311,6 +324,19 @@ class Menu extends events_1.EventEmitter {
         }
     }
     /**
+     *
+     * @param pageIndex
+     * @param buttonIndex
+     * @param i A value to pass into the callback
+     * @returns
+     */
+    forceCallback(buttonIndex, i) {
+        if (typeof this.pages[this.currentPage.index].buttons[buttonIndex].callback != "function")
+            return;
+        //@ts-ignore
+        this.pages[this.currentPage.index].buttons[buttonIndex].callback(i);
+    }
+    /**
      * Delete the menu message.
      */
     async delete() {
@@ -367,7 +393,7 @@ class Menu extends events_1.EventEmitter {
      * Start a reaction collector and switch pages where required.
      */
     awaitButtons() {
-        this.buttonCollector = new discord_js_1.InteractionCollector(client, { filter: (i) => i.member.user.id == this.userID && i.isSelectMenu(), idle: 180000 });
+        this.buttonCollector = new discord_js_1.InteractionCollector(client, { filter: (i) => i.member.user.id == this.userID && i.isSelectMenu(), idle: this.ms });
         // this.menu.createMenuCollector((button: { clicker: { id: any; }; }) => button.clicker.id === this.userID, { idle: this.ms })
         //@ts-ignore
         this.buttonCollector.on('end', (i, reason) => {

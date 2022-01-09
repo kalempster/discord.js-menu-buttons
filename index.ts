@@ -24,8 +24,8 @@ export class ButtonPage {
     name: string;
     content: MessageEmbed;
     buttons: MenuButton[];
-    index: number
-    constructor(name: string, content: MessageEmbed, buttons: MenuButton[], index: number) {
+    index?: number
+    constructor(name: string, content: MessageEmbed, buttons: MenuButton[], index?: number) {
         this.name = name
         this.content = content
         this.buttons = buttons
@@ -62,8 +62,8 @@ export class Page {
     name: string;
     content: MessageEmbed;
     buttons: MenuOption[];
-    index: number;
-    constructor(name: string, content: MessageEmbed, buttons: MenuOption[], index: number) {
+    index?: number;
+    constructor(name: string, content: MessageEmbed, buttons: MenuOption[], index?: number) {
         this.name = name
         this.content = content
         this.buttons = buttons
@@ -156,6 +156,18 @@ export class ButtonMenu extends EventEmitter {
             this.buttonCollector.stop("clear")
         }
     }
+    /**
+       * 
+       * @param pageIndex 
+       * @param buttonIndex 
+       * @param i A value to pass into the callback 
+       * @returns 
+       */
+    forceCallback(buttonIndex: number, i) {
+        if (typeof this.pages[this.currentPage.index].buttons[buttonIndex].callback != "function") return;
+        //@ts-ignore
+        this.pages[this.currentPage.index].buttons[buttonIndex].callback(i);
+    }
 
     /**
      * Delete the menu message.
@@ -219,7 +231,7 @@ export class ButtonMenu extends EventEmitter {
      * Start a reaction collector and switch pages where required.
      */
     awaitButtons() {
-        this.buttonCollector = new InteractionCollector<ButtonInteraction>(client, { filter: (i) => i.member.user.id === this.userID && i.isButton(), idle: 180000, })
+        this.buttonCollector = new InteractionCollector<ButtonInteraction>(client, { filter: (i) => i.member.user.id === this.userID && i.isButton(), idle: this.ms, })
         // this.menu.createButtonCollector((button: { clicker: { id: any; }; }) => button.clicker.id === this.userID, { idle: this.ms })
 
         //@ts-ignore
@@ -351,7 +363,19 @@ export class Menu extends EventEmitter {
             this.buttonCollector.stop("clear")
         }
     }
-
+    /**
+     * 
+     * @param pageIndex 
+     * @param buttonIndex 
+     * @param i A value to pass into the callback 
+     * @returns 
+     */
+    forceCallback(buttonIndex: number, i) {
+        if (typeof this.pages[this.currentPage.index].buttons[buttonIndex].callback != "function") return;
+        //@ts-ignore
+        this.pages[this.currentPage.index].buttons[buttonIndex].callback(i);
+    }
+ 
     /**
      * Delete the menu message.
      */
@@ -413,7 +437,7 @@ export class Menu extends EventEmitter {
      * Start a reaction collector and switch pages where required.
      */
     awaitButtons() {
-        this.buttonCollector = new InteractionCollector<SelectMenuInteraction>(client, { filter: (i) => i.member.user.id == this.userID && i.isSelectMenu(), idle: 180000 })
+        this.buttonCollector = new InteractionCollector<SelectMenuInteraction>(client, { filter: (i) => i.member.user.id == this.userID && i.isSelectMenu(), idle: this.ms })
         // this.menu.createMenuCollector((button: { clicker: { id: any; }; }) => button.clicker.id === this.userID, { idle: this.ms })
         //@ts-ignore
         this.buttonCollector.on('end', (i, reason: string) => {
