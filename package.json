@@ -1,6 +1,6 @@
 {
     "name": "discord.js-menu-buttons",
-    "version": "1.1.7",
+    "version": "1.1.8",
     "description": "Send menus with buttons or list",
     "main": "index.js",
     "scripts": {
@@ -23,7 +23,7 @@
     },
     "homepage": "https://github.com/kalempster/discord.js-menu-buttons#readme",
     "dependencies": {
-        "discord.js": "^13.2.0",
+        "discord.js": "^13.6.0",
         "lodash": "^4.17.21"
     },
     "devDependencies": {
