@@ -1,4 +1,4 @@
-import { ButtonInteraction, SelectMenuInteraction, Client, MessageEmbed, MessageSelectOptionData, MessageButton, TextChannel, Message, InteractionCollector, MessageActionRow, MessageSelectMenu, TextBasedChannels } from "discord.js";
+import { ButtonInteraction, SelectMenuInteraction, Client, MessageEmbed, MessageSelectOptionData, MessageButton, TextChannel, Message, InteractionCollector, MessageActionRow, MessageSelectMenu, TextBasedChannel } from "discord.js";
 import { EventEmitter } from "events"
 import { random } from "lodash"
 export type ButtonCallback = (btn: ButtonInteraction) => void
@@ -79,7 +79,7 @@ export class Page {
  */
 export class ButtonMenu extends EventEmitter {
 
-    channel: TextBasedChannels;
+    channel: TextBasedChannel;
     userID: string;
     ms: number;
     pages: ButtonPage[];
@@ -88,7 +88,7 @@ export class ButtonMenu extends EventEmitter {
     buttons: MenuButton[];
     menu: Message;
     buttonCollector: InteractionCollector<ButtonInteraction>;
-    constructor(channel: TextBasedChannels, userID: string, pages: ButtonPage[], ms = 180000) {
+    constructor(channel: TextBasedChannel, userID: string, pages: ButtonPage[], ms = 180000) {
         if (!client) throw new Error("Client hasn't been set");
         super()
         this.channel = channel
@@ -288,7 +288,7 @@ export class ButtonMenu extends EventEmitter {
 
 export class Menu extends EventEmitter {
 
-    channel: TextBasedChannels;
+    channel: TextBasedChannel;
     userID: string;
     ms: number;
     pages: Page[];
@@ -298,7 +298,7 @@ export class Menu extends EventEmitter {
     menu: Message;
     buttonCollector: InteractionCollector<SelectMenuInteraction>;
     buttonMenu: MessageSelectMenu;
-    constructor(channel: TextBasedChannels, userID: string, pages: Page[], ms = 180000) {
+    constructor(channel: TextBasedChannel, userID: string, pages: Page[], ms = 180000) {
         if (!client) throw new Error("Client hasn't been set");
         super()
         this.channel = channel
@@ -426,7 +426,7 @@ export class Menu extends EventEmitter {
      * React to the new page with all of it's defined reactions
      */
     addButtons() {
-
+        
         this.buttonMenu.options = [];
         for (const btn of this.currentPage.buttons) {
             this.buttonMenu.addOptions(btn.listOption);
