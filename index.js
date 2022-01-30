@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Menu = exports.ButtonMenu = exports.Page = exports.MenuButton = exports.MenuOption = exports.ButtonPage = exports.setClient = void 0;
+exports.Menu = exports.Page = exports.ButtonOption = exports.MenuOption = exports.Row = exports.RowTypes = exports.setClient = void 0;
 const discord_js_1 = require("discord.js");
 const events_1 = require("events");
 const lodash_1 = require("lodash");
@@ -13,22 +13,20 @@ function setClient(c) {
     client = c;
 }
 exports.setClient = setClient;
-/**
- * A page object that the menu can display.
- */
-class ButtonPage {
-    name;
-    content;
+var RowTypes;
+(function (RowTypes) {
+    RowTypes[RowTypes["SelectMenu"] = 0] = "SelectMenu";
+    RowTypes[RowTypes["ButtonMenu"] = 1] = "ButtonMenu";
+})(RowTypes = exports.RowTypes || (exports.RowTypes = {}));
+class Row {
     buttons;
-    index;
-    constructor(name, content, buttons, index) {
-        this.name = name;
-        this.content = content;
+    rowType;
+    constructor(buttons, rowType) {
         this.buttons = buttons;
-        this.index = index;
+        this.rowType = rowType;
     }
 }
-exports.ButtonPage = ButtonPage;
+exports.Row = Row;
 class MenuOption {
     listOption;
     callback;
@@ -38,222 +36,31 @@ class MenuOption {
     }
 }
 exports.MenuOption = MenuOption;
-class MenuButton {
-    buttonOption;
+class ButtonOption {
+    listOption;
     callback;
-    constructor(buttonOption, callback) {
-        this.buttonOption = buttonOption;
+    constructor(listOption, callback) {
+        this.listOption = listOption;
         this.callback = callback;
     }
 }
-exports.MenuButton = MenuButton;
+exports.ButtonOption = ButtonOption;
 /**
  * A page object that the menu can display.
  */
 class Page {
     name;
     content;
-    buttons;
+    rows;
     index;
-    constructor(name, content, buttons, index) {
+    constructor(name, content, rows, index) {
         this.name = name;
         this.content = content;
-        this.buttons = buttons;
+        this.rows = rows;
         this.index = index;
     }
 }
 exports.Page = Page;
-/**
- * A menu with customisable reactions for every page.
- * Blacklisted page names are: `first, last, previous, next, stop, delete`.
- * These names perform special functions and should only be used as reaction destinations.
- */
-class ButtonMenu extends events_1.EventEmitter {
-    channel;
-    userID;
-    ms;
-    pages;
-    currentPage;
-    pageIndex;
-    buttons;
-    menu;
-    buttonCollector;
-    constructor(channel, userID, pages, ms = 180000) {
-        if (!client)
-            throw new Error("Client hasn't been set");
-        super();
-        this.channel = channel;
-        this.userID = userID;
-        this.ms = ms;
-        /**
-         * List of pages available to the Menu.
-         * @type {ButtonPage[]}
-         */
-        this.pages = [];
-        let i = 0;
-        pages.forEach((page) => {
-            this.pages.push(new ButtonPage(page.name, page.content, page.buttons, i));
-            i++;
-        });
-        /**
-         * The page the Menu is currently displaying in chat.
-         * @type {ButtonPage}
-         */
-        this.currentPage = this.pages[0];
-        /**
-         * The index of the Pages array we're currently on.
-         * @type {Number}
-         */
-        this.pageIndex = 0;
-        this.buttons = [];
-    }
-    /**
-     * Send the Menu and begin listening for reactions.
-     */
-    async start() {
-        // TODO: Sort out documenting this as a TSDoc event.
-        this.emit('pageChange', this.currentPage);
-        this.addButtons();
-        const components = [];
-        for (const button of this.buttons) {
-            components.push(button.buttonOption);
-        }
-        if (components.length > 0)
-            //@ts-ignore
-            this.menu = await this.channel.send({ embeds: [this.currentPage.content], components: [new discord_js_1.MessageActionRow().addComponents(components)] }).catch(console.log);
-        else
-            //@ts-ignore    
-            this.menu = await this.channel.send({ embeds: [this.currentPage.content] }).catch(console.log);
-        this.awaitButtons();
-    }
-    /**
-     * Stop listening for new reactions.
-     */
-    stop() {
-        if (this.buttonCollector) {
-            this.buttonCollector.stop();
-        }
-    }
-    stopWithoutClearingButtons() {
-        if (this.buttonCollector) {
-            this.buttonCollector.stop("clear");
-        }
-    }
-    /**
-       *
-       * @param pageIndex
-       * @param buttonIndex
-       * @param i A value to pass into the callback
-       * @returns
-       */
-    forceCallback(buttonIndex, i) {
-        if (typeof this.pages[this.currentPage.index].buttons[buttonIndex].callback != "function")
-            return;
-        //@ts-ignore
-        this.pages[this.currentPage.index].buttons[buttonIndex].callback(i);
-    }
-    /**
-     * Delete the menu message.
-     */
-    async delete() {
-        if (this.menu) {
-            await this.menu.delete().catch(console.log);
-            //for some reason this shit doesn't set itself to true automatically after deleting the message, we'll do it for them
-            this.menu.deleted = true;
-        }
-        if (this.buttonCollector)
-            this.buttonCollector.stop();
-    }
-    /**
-     * Remove all reactions from the menu message.
-     */
-    async clearButtons() {
-        //if the menu is deleted, we cant set it's components to nothing because it doesnt exist anymore and we would
-        //get the unknown message error from discord
-        if (!this.menu.deleted) {
-            return await this.menu.edit({ embeds: [this.currentPage.content], components: [] }).catch(console.log);
-        }
-    }
-    async setPage(page = 0) {
-        this.emit('pageChange', this.pages[page]);
-        this.pageIndex = page;
-        this.currentPage = this.pages[this.pageIndex];
-        this.buttonCollector.stop();
-        this.addButtons();
-        if (this.currentPage.buttons.length != 0) {
-            this.menu.components = [];
-            const components = [];
-            for (const button of this.buttons) {
-                components.push(button.buttonOption);
-            }
-            this.menu.edit({ embeds: [this.currentPage.content], components: [new discord_js_1.MessageActionRow().addComponents(components)] }).catch(console.log);
-        }
-        else
-            this.menu.edit({ embeds: [this.currentPage.content], components: [] }).catch(console.log);
-        this.awaitButtons();
-    }
-    /**
-     * React to the new page with all of it's defined reactions
-     */
-    addButtons() {
-        this.buttons = [];
-        for (const btn of this.currentPage.buttons) {
-            this.buttons.push(btn);
-        }
-    }
-    /**
-     * Start a reaction collector and switch pages where required.
-     */
-    awaitButtons() {
-        this.buttonCollector = new discord_js_1.InteractionCollector(client, { filter: (i) => i.member.user.id === this.userID && i.isButton(), idle: this.ms, });
-        // this.menu.createButtonCollector((button: { clicker: { id: any; }; }) => button.clicker.id === this.userID, { idle: this.ms })
-        //@ts-ignore
-        this.buttonCollector.on("end", (i, reason) => {
-            if (reason != "clear")
-                return this.clearButtons().catch(console.log);
-        });
-        this.buttonCollector.on('collect', async (i) => {
-            let buttonIndex;
-            //@ts-ignore
-            buttonIndex = this.currentPage.buttons.findIndex(btn => btn.buttonOption.customId == i.customId);
-            if (buttonIndex != -1) {
-                if (typeof this.currentPage.buttons[buttonIndex].callback === 'function') {
-                    //@ts-ignore this shit tells me that string is not callable bitch i just fucking checked if it's a function so stfu
-                    return this.currentPage.buttons[buttonIndex].callback(i);
-                }
-                await i.deferUpdate();
-                switch (this.currentPage.buttons[buttonIndex].callback) {
-                    case 'first':
-                        this.setPage(0);
-                        break;
-                    case 'last':
-                        this.setPage(this.pages.length - 1);
-                        break;
-                    case 'previous':
-                        if (this.pageIndex > 0) {
-                            this.setPage(this.pageIndex - 1);
-                        }
-                        break;
-                    case 'next':
-                        if (this.pageIndex < this.pages.length - 1) {
-                            this.setPage(this.pageIndex + 1);
-                        }
-                        break;
-                    case 'stop':
-                        this.stop();
-                        break;
-                    case 'delete':
-                        this.delete();
-                        break;
-                    default:
-                        this.setPage(this.pages.findIndex((p) => p.name === this.currentPage.buttons[buttonIndex].callback));
-                        break;
-                }
-            }
-        });
-    }
-}
-exports.ButtonMenu = ButtonMenu;
 class Menu extends events_1.EventEmitter {
     channel;
     userID;
@@ -263,8 +70,9 @@ class Menu extends events_1.EventEmitter {
     pageIndex;
     buttons;
     menu;
+    selectCollector;
     buttonCollector;
-    buttonMenu;
+    components;
     constructor(channel, userID, pages, ms = 180000) {
         if (!client)
             throw new Error("Client hasn't been set");
@@ -279,7 +87,7 @@ class Menu extends events_1.EventEmitter {
         this.pages = [];
         let i = 0;
         pages.forEach((page) => {
-            this.pages.push(new Page(page.name, page.content, page.buttons, i));
+            this.pages.push(new Page(page.name, page.content, page.rows, i));
             i++;
         });
         /**
@@ -292,8 +100,7 @@ class Menu extends events_1.EventEmitter {
          * @type {Number}
          */
         this.pageIndex = 0;
-        this.buttonMenu = new discord_js_1.MessageSelectMenu()
-            .setCustomId(randomButtonId());
+        this.components = [];
     }
     /**
      * Send the Menu and begin listening for reactions.
@@ -301,27 +108,29 @@ class Menu extends events_1.EventEmitter {
     async start() {
         // TODO: Sort out documenting this as a TSDoc event.
         this.emit('pageChange', this.currentPage);
-        this.addButtons();
-        if (this.buttonMenu.options.length > 0)
-            //@ts-ignore
-            this.menu = await this.channel.send({ embeds: [this.currentPage.content], components: [new discord_js_1.MessageActionRow().addComponents([this.buttonMenu])] }).catch(console.log);
-        else
-            //@ts-ignore
-            this.menu = await this.channel.send({ embeds: [this.currentPage.content] }).catch(console.log);
+        //@ts-ignore
+        if (this.currentPage.rows.length <= 0)
+            return this.menu = await this.channel.send({ embeds: [this.currentPage.content] }).catch(console.log);
+        this.addRows();
+        //@ts-ignore
+        this.menu = await this.channel.send({ embeds: [this.currentPage.content], components: this.components }).catch(console.log);
+        this.awaitMenu();
         this.awaitButtons();
     }
     /**
      * Stop listening for new reactions.
      */
     stop() {
-        if (this.buttonCollector) {
+        if (this.selectCollector)
+            this.selectCollector.stop();
+        if (this.buttonCollector)
             this.buttonCollector.stop();
-        }
     }
     stopWithoutClearingButtons() {
-        if (this.buttonCollector) {
+        if (this.selectCollector)
+            this.selectCollector.stop("clear");
+        if (this.buttonCollector)
             this.buttonCollector.stop("clear");
-        }
     }
     /**
      *
@@ -330,11 +139,11 @@ class Menu extends events_1.EventEmitter {
      * @param i A value to pass into the callback
      * @returns
      */
-    forceCallback(buttonIndex, i) {
-        if (typeof this.pages[this.currentPage.index].buttons[buttonIndex].callback != "function")
+    forceCallback(rowIndex, buttonIndex, i) {
+        if (typeof this.pages[this.currentPage.index].rows[rowIndex].buttons[buttonIndex].callback != "function")
             return;
         //@ts-ignore
-        this.pages[this.currentPage.index].buttons[buttonIndex].callback(i);
+        this.pages[this.currentPage.index].rows[rowIndex].buttons[buttonIndex].callback(i);
     }
     /**
      * Delete the menu message.
@@ -345,6 +154,8 @@ class Menu extends events_1.EventEmitter {
         await this.menu.delete().catch(console.log);
         //for some reason this shit doesn't set itself to true automatically after deleting the message, we'll do it for them
         this.menu.deleted = true;
+        if (this.selectCollector)
+            this.selectCollector.stop();
         if (this.buttonCollector)
             this.buttonCollector.stop();
     }
@@ -370,47 +181,58 @@ class Menu extends events_1.EventEmitter {
         this.emit('pageChange', this.pages[page]);
         this.pageIndex = page;
         this.currentPage = this.pages[this.pageIndex];
+        this.selectCollector.stop();
         this.buttonCollector.stop();
-        this.addButtons();
-        if (this.buttonMenu.options.length != 0) {
-            this.menu.components = [];
-            this.menu.edit({ embeds: [this.currentPage.content], components: [new discord_js_1.MessageActionRow().addComponents([this.buttonMenu])] }).catch(console.log);
-        }
-        else
-            this.menu.edit({ embeds: [this.currentPage.content], components: [] }).catch(console.log);
+        this.addRows();
+        if (this.currentPage.rows.length <= 0)
+            return this.menu.edit({ embeds: [this.currentPage.content] }).catch(console.log);
+        this.menu.edit({ embeds: [this.currentPage.content], components: this.components }).catch(console.log);
+        this.awaitMenu();
         this.awaitButtons();
     }
     /**
      * React to the new page with all of it's defined reactions
      */
-    addButtons() {
-        this.buttonMenu.options = [];
-        for (const btn of this.currentPage.buttons) {
-            this.buttonMenu.addOptions(btn.listOption);
+    addRows() {
+        if (this.currentPage.rows.length > 5)
+            throw new Error(`Maximum amount of rows is 5, passed ${this.currentPage.rows.length} rows.`);
+        this.components = [];
+        //For each row we're checking the row type
+        for (const row of this.currentPage.rows) {
+            if (row.rowType == RowTypes.ButtonMenu)
+                //If the row type is buttons then we add a row to out row array with all of the buttons option
+                //@ts-ignore I ts-ignore here because typescript still thinks that we're not sure which type we're returning (even though we know it'll be button types)
+                this.components.push(new discord_js_1.MessageActionRow().addComponents(row.buttons.map(btn => new discord_js_1.MessageButton(btn.listOption))));
+            else
+                //@ts-ignore
+                this.components.push(new discord_js_1.MessageActionRow().addComponents(new discord_js_1.MessageSelectMenu().setCustomId(randomButtonId()).addOptions(row.buttons.map(btn => btn.listOption))));
         }
     }
     /**
      * Start a reaction collector and switch pages where required.
      */
-    awaitButtons() {
-        this.buttonCollector = new discord_js_1.InteractionCollector(client, { filter: (i) => i.member.user.id == this.userID && i.isSelectMenu(), idle: this.ms });
+    awaitMenu() {
+        this.selectCollector = new discord_js_1.InteractionCollector(client, { filter: (i) => i.member.user.id == this.userID && i.isSelectMenu(), idle: this.ms });
         // this.menu.createMenuCollector((button: { clicker: { id: any; }; }) => button.clicker.id === this.userID, { idle: this.ms })
         //@ts-ignore
-        this.buttonCollector.on('end', (i, reason) => {
+        this.selectCollector.on('end', (i, reason) => {
             if (reason != "clear")
                 return this.clearButtons().catch(console.log);
         });
-        this.buttonCollector.on('collect', async (i) => {
+        this.selectCollector.on('collect', async (i) => {
             // If the name exists, prioritise using that, otherwise, use the ID. If neither are in the list, don't run anything.
             let buttonIndex;
-            buttonIndex = this.currentPage.buttons.findIndex(opt => opt.listOption.value == i.values[0]);
+            //@ts-ignore
+            let row = this.currentPage.rows[this.currentPage.rows.findIndex(r => r.buttons[r.buttons.findIndex(opt => opt.listOption.value == i.values[0])])];
+            //@ts-ignore
+            buttonIndex = row.buttons.findIndex(opt => opt.listOption.value == i.values[0]);
             if (buttonIndex != -1) {
-                if (typeof this.currentPage.buttons[buttonIndex].callback === 'function') {
+                if (typeof row.buttons[buttonIndex].callback === 'function') {
                     //@ts-ignore this shit tells me that string is not callable bitch i just fucking checked if it's a function so stfu
-                    return this.currentPage.buttons[buttonIndex].callback(i);
+                    return row.buttons[buttonIndex].callback(i);
                 }
                 await i.deferReply();
-                switch (this.currentPage.buttons[buttonIndex].callback) {
+                switch (row.buttons[buttonIndex].callback) {
                     case 'first':
                         this.setPage(0);
                         break;
@@ -434,7 +256,60 @@ class Menu extends events_1.EventEmitter {
                         this.delete();
                         break;
                     default:
-                        this.setPage(this.pages.findIndex((p) => p.name === this.currentPage.buttons[buttonIndex].callback));
+                        this.setPage(this.pages.findIndex((p) => p.name === row.buttons[buttonIndex].callback));
+                        break;
+                }
+            }
+        });
+    }
+    /**
+     * Start a reaction collector and switch pages where required.
+     */
+    awaitButtons() {
+        this.buttonCollector = new discord_js_1.InteractionCollector(client, { filter: (i) => i.member.user.id === this.userID && i.isButton(), idle: this.ms, });
+        // this.menu.createButtonCollector((button: { clicker: { id: any; }; }) => button.clicker.id === this.userID, { idle: this.ms })
+        //@ts-ignore
+        this.buttonCollector.on("end", (i, reason) => {
+            if (reason != "clear")
+                return this.clearButtons().catch(console.log);
+        });
+        this.buttonCollector.on('collect', async (i) => {
+            let buttonIndex;
+            //@ts-ignore
+            let row = this.currentPage.rows[this.currentPage.rows.findIndex(r => r.buttons[r.buttons.findIndex(opt => opt.listOption.customId == i.customId)])];
+            //@ts-ignore
+            buttonIndex = row.buttons.findIndex(opt => opt.listOption.customId == i.customId);
+            if (buttonIndex != -1) {
+                if (typeof row.buttons[buttonIndex].callback === 'function') {
+                    //@ts-ignore this shit tells me that string is not callable bitch i just fucking checked if it's a function so stfu
+                    return row.buttons[buttonIndex].callback(i);
+                }
+                await i.deferUpdate();
+                switch (row.buttons[buttonIndex].callback) {
+                    case 'first':
+                        this.setPage(0);
+                        break;
+                    case 'last':
+                        this.setPage(this.pages.length - 1);
+                        break;
+                    case 'previous':
+                        if (this.pageIndex > 0) {
+                            this.setPage(this.pageIndex - 1);
+                        }
+                        break;
+                    case 'next':
+                        if (this.pageIndex < this.pages.length - 1) {
+                            this.setPage(this.pageIndex + 1);
+                        }
+                        break;
+                    case 'stop':
+                        this.stop();
+                        break;
+                    case 'delete':
+                        this.delete();
+                        break;
+                    default:
+                        this.setPage(this.pages.findIndex((p) => p.name === row.buttons[buttonIndex].callback));
                         break;
                 }
             }

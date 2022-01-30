@@ -14,131 +14,96 @@ The bot requires giving it a client variable since InteractionCollector needs it
 To initialize the bot you have to execute the function named setClient
 ```typescript
 import { Client, MessageEmbed } from "discord.js";
-import { ButtonMenu, setClient } from "discord.js-menu-buttons";
+import { Menu } from "discord.js-menu-buttons";
 const client = new Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
 setClient(client);
 ```
 
-# ButtonMenu
+# Menu
 ```typescript
-
-
-const buttonMenu = new ButtonMenu(message.channel, message.author.id, [
-    {
-        name: "page1",
-        content: new MessageEmbed().setTitle("Hey!"),
-        buttons: [
-            {
-                buttonOption: {
-                    label: "Hey this is the first option!",
-                    customId: "thishastobedifferentforeachbutton",
-                    style: "PRIMARY",
-                    type: "BUTTON",
-                    emoji: "ℹ"
-                },
-                callback: "page2" //here you can type in a string to get to another page or a function to execute code after clicking
-            }
-        ]
-    },
-    {
-        name: "page2",
-        content: new MessageEmbed().setTitle("Second page!"),
-        buttons: [
-            {
-                buttonOption: {
-                    label: "Go back!",
-                    customId: "thishastobedifferentforeachbutton",
-                    style: "DANGER",
-                    type: "BUTTON",
-                    emoji: "ℹ"
-                },
-                callback: "previous" //you can have multiple keywords to operate those pages for example previousm, first, last, 
-            },
-            {
-                buttonOption: {
-                    label: "Hey this is the second option of the second page!",
-                    customId: "thishastobedifferentforeachbutton1",
-                    style: "DANGER",
-                    type: "BUTTON",
-                    emoji: "ℹ"
-                },
-                callback: (i) => {  //here you can type in a string to get to another page or a function to execute code after clicking
-                    i.deferUpdate() //it tells discord that the interaction was successful
-                    message.reply("Hey it's me from the code!");
-                    console.log(i.member.user.username);
-                    
-                }
-            }
-        ]
-    }
-])
-buttonMenu.start();
-```
-
-# Select menu
-```typescript
-const selectMenu = new Menu(message.channel, message.author.id, [
+const menu = new Menu(message.channel, message.author.id, [
 {
     name: "page1",
-    content: new MessageEmbed().setTitle("Hey!"),
-    buttons: [
-        {
-            listOption: {
-                label: "option1",
-                value: "value1",
-                description: "here's a description",
-                emoji: "😁"
-            },
-            callback: "page2"
-        },
-        {
-            listOption: {
-                label: "option2",
-                value: "value2",
-                description: "here's a description2",
-                emoji: "😃"
-            },
-            callback: (i) => {
-                i.deferUpdate(); 
-                console.log(i.values[0]); //value2
-            }
-        }
+    content: new MessageEmbed().setTitle("Hello!"),
+    rows: [
+        new Row([
+            new ButtonOption(
+                {
+                    customId: "thisHasToBeRandomAndDifferentFromEveryButton",
+                    style: "PRIMARY",
+                    label: "Button1"
+                },
+                (i) => {
+                    i.deferUpdate();
+                    console.log("Clicked button1 " + i.customId)
+                }
+            ),
+            new ButtonOption(
+                {
+                    customId: "thisHasToBeRandomAndDifferentFromEveryButton1",
+                    style: "PRIMARY",
+                    label: "Button2"
+                },
+                (i) => {
+                    i.deferUpdate();
+                    console.log("Clicked button1 " + i.customId)
+                    
+                }
+            )
+        ], RowTypes.ButtonMenu),
+        new Row([
+            new MenuOption(
+                {
+                    label: "lbl",
+                    value: "value",
+                },
+                (i) => {
+                    i.deferUpdate();
+                    console.log(i.values[0]); //value
+                }
+            )
+        ], RowTypes.SelectMenu),
+        new Row([
+            new MenuOption(
+                {
+                    label: "label",
+                    description: "description",
+                    value: "val"
+                },
+                "page2"
+            )
+        ], RowTypes.SelectMenu)
     ]
 },
 {
     name: "page2",
-    content: new MessageEmbed().setTitle("Hey2!"),
-    buttons: [
-        {
-            listOption: {
-                label: "option1",
-                value: "value1",
-                description: "here's a description",
-                emoji: "😁"
-            },
-            callback: "previous"
-        },
-        {
-            listOption: {
-                label: "option2",
-                value: "value2",
-                description: "here's a description2",
-                emoji: "😃"
-            },
-            callback: (i) => {
-                i.deferUpdate(); 
-                console.log(i.values[0]); //value2
-            }
-        }
+    content: new MessageEmbed().setTitle("Page2"),
+    rows: [
+        new Row([
+            new MenuOption(
+                {
+                    label: "label1",
+                    value: "value1",
+                },
+                (i) => {
+                    i.deferUpdate();
+                    console.log(i.values[0]);
+                }
+            ),
+            new MenuOption(
+                {
+                    label: "go to page1",
+                    value: "value2"
+                },
+                "page1"
+            )
+        ], RowTypes.SelectMenu)
     ]
 }
 ])
-selectMenu.start();
+menu.start();
 ```
 
-### Using both
-Using both of the menus (on page 1 a menu with buttons and on page 2 a menu with select menu) for now isn't possible because of how the code is structured and to do this
-it would need a complete remake.
 
 ### Special Destinations
 You may have noticed I mentioned "special destinations" above.   
