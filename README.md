@@ -3,6 +3,9 @@ At first I would like to clarify that this package is just a modification to an 
 is unactive and the package is stuck in discord.jsV12 I made a modified version of this package that is up to date. Also some of the readme will be stripped of right 
 from the original package since I'm too lazy to type this shit in.
 
+# Docs
+Here are the [docs](https://kalempster.github.io/discord.js-menu-buttons-docs/) for the module although you can see the usage below 
+
 ### Usage
 Using this package is quite simple and simmilar to the original so if you've used Jowsey's package before you'll be familiar with this setup.
 In this example I'm creating a menu that has 2 pages, "page 1" and "page 2". "page 1" has two buttons one for the bot to send a message saying hello

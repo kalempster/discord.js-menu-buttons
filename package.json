@@ -14,7 +14,9 @@
         "discord.js",
         "menus",
         "buttons",
-        "lists"
+        "lists",
+        "discord",
+        "embed"
     ],
     "author": "kalempster",
     "license": "MIT",

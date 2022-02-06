@@ -73,6 +73,9 @@ export class Page {
     }
 }
 
+/**
+ * @noInheritDoc only for typedoc. Commenting a comment lol.
+ */
 
 export class Menu extends EventEmitter {
 
@@ -87,6 +90,13 @@ export class Menu extends EventEmitter {
     selectCollector: InteractionCollector<SelectMenuInteraction>;
     buttonCollector: InteractionCollector<ButtonInteraction>;
     components: MessageActionRow[];
+    /**
+     * 
+     * @param channel A channel that the menu will be displayed in
+     * @param userID The userId that the bot will assign the menu to
+     * @param pages Array of pages to display
+     * @param ms Time before the menu stops
+     */
     constructor(channel: TextBasedChannel, userID: string, pages: Page[], ms = 180000) {
         if (!client) throw new Error("Client hasn't been set");
         super()
@@ -124,7 +134,8 @@ export class Menu extends EventEmitter {
     }
 
     /**
-     * Send the Menu and begin listening for reactions.
+     * 
+     * Send the message with all of the buttons in the page, then listen for events
      */
     async start() {
         // TODO: Sort out documenting this as a TSDoc event.
@@ -142,7 +153,7 @@ export class Menu extends EventEmitter {
     }
 
     /**
-     * Stop listening for new reactions.
+     * Stop listening for new events
      */
     stop() {
         if (this.selectCollector)
@@ -151,6 +162,9 @@ export class Menu extends EventEmitter {
             this.buttonCollector.stop();
     }
 
+    /**
+     * Stop listening for new events but without clearing buttons
+     */
     stopWithoutClearingButtons() {
         if (this.selectCollector)
             this.selectCollector.stop("clear")
@@ -160,10 +174,9 @@ export class Menu extends EventEmitter {
     }
     /**
      * 
-     * @param pageIndex 
-     * @param buttonIndex 
-     * @param i A value to pass into the callback 
-     * @returns 
+     * @param rowIndex The row index that contains the button
+     * @param buttonIndex Index of the button/select menu option
+     * @param i A value to pass into the callback since no interaction data is created 
      */
     forceCallback(rowIndex: number, buttonIndex: number, i) {
         if (typeof this.pages[this.currentPage.index].rows[rowIndex].buttons[buttonIndex].callback != "function") return;
@@ -178,6 +191,8 @@ export class Menu extends EventEmitter {
         if (!this.menu) return;
         await this.menu.delete().catch(console.log);
         //for some reason this shit doesn't set itself to true automatically after deleting the message, we'll do it for them
+        //Alright now I know why this shit doesn't set itself to true automatically after deleting the message, because it was a buggy mess and they...
+        //...finally deprecated it. Whatever I'll use it anyway
         this.menu.deleted = true;
 
         if (this.selectCollector)
@@ -191,8 +206,8 @@ export class Menu extends EventEmitter {
      */
     async clearButtons() {
         if (!this.menu) return;
-        //if the menu is deleted, we cant set it's components to nothing because it doesnt exist anymore and we would
-        //get the unknown message error from discord
+        //If the menu is deleted, we cant set it's components to nothing because it doesnt exist anymore and we would...
+        //...get the unknown message error from discord
         if (!this.menu.deleted) {
             return await this.menu.edit({ embeds: [this.currentPage.content], components: [] }).catch(console.log);
         }
@@ -200,7 +215,7 @@ export class Menu extends EventEmitter {
 
     /**
      * Jump to a new page in the Menu.
-     * @param {Number} page The index of the page the Menu should jump to.
+     * @param page The index of the page the Menu should jump to.
      */
     async setPage(page: number = 0) {
         if (!this.menu) return;
@@ -218,10 +233,10 @@ export class Menu extends EventEmitter {
     }
 
     /**
-     * React to the new page with all of it's defined reactions
+     * Add all of the rows to the page
      */
     addRows() {
-        if(this.currentPage.rows.length > 5) throw new Error(`Maximum amount of rows is 5, passed ${this.currentPage.rows.length} rows.`)
+        if (this.currentPage.rows.length > 5) throw new Error(`Maximum amount of rows is 5, passed ${this.currentPage.rows.length} rows.`)
         this.components = [];
         //For each row we're checking the row type
         for (const row of this.currentPage.rows) {
@@ -236,7 +251,7 @@ export class Menu extends EventEmitter {
     }
 
     /**
-     * Start a reaction collector and switch pages where required.
+     * Start an interaction collector and switch pages where required
      */
     awaitMenu() {
 
@@ -298,7 +313,7 @@ export class Menu extends EventEmitter {
     }
 
     /**
-     * Start a reaction collector and switch pages where required.
+     * Start an interaction collector and switch pages where required.
      */
     awaitButtons() {
         this.buttonCollector = new InteractionCollector<ButtonInteraction>(client, { filter: (i) => i.member.user.id === this.userID && i.isButton(), idle: this.ms, })
@@ -360,7 +375,6 @@ export class Menu extends EventEmitter {
 
 const buttonAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const buttonNumbers = "0123456789";
-
 
 function randomButtonId() {
     let buttonId = "";
