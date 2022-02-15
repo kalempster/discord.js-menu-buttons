@@ -123,5 +123,8 @@ discord.js-menu-buttons comes with 6 pre-defined destinations with specific uses
 
 Note that whilst calling a page one of these wouldn't break anything (the page would still be accessible using, ironically, the special destinations) you wouldn't be able to directly link to it.
 
+### Support
+You can visit [this](https://discord.gg/p4DnZdvk3x) support discord.
+
 ### Acknowledgements
 Major parts of this project were by Jowsey's [discord.js-menu](https://github.com/jowsey/discord.js-menu).  
