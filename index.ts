@@ -249,7 +249,7 @@ export class Menu extends EventEmitter {
      * Start an interaction collector and switch pages where required
      */
     awaitMenu() {
-        this.selectCollector = new InteractionCollector<StringSelectMenuInteraction>(client, { filter: (i) => i.member.user.id == this.userID && i.isSelectMenu(), idle: this.ms })
+        this.selectCollector = new InteractionCollector<StringSelectMenuInteraction>(client, { filter: (i) => i.member.user.id == this.userID && i.isStringSelectMenu(), idle: this.ms })
         //@ts-ignore
         this.selectCollector.on("end", (i, reason: string) => {
             if (reason != "clear")
