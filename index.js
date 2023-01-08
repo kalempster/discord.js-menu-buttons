@@ -223,7 +223,7 @@ class Menu extends events_1.EventEmitter {
      * Start an interaction collector and switch pages where required
      */
     awaitMenu() {
-        this.selectCollector = new discord_js_1.InteractionCollector(client, { filter: (i) => i.member.user.id == this.userID && i.isSelectMenu(), idle: this.ms });
+        this.selectCollector = new discord_js_1.InteractionCollector(client, { filter: (i) => i.member.user.id == this.userID && i.isStringSelectMenu(), idle: this.ms });
         //@ts-ignore
         this.selectCollector.on("end", (i, reason) => {
             if (reason != "clear")
@@ -274,7 +274,7 @@ class Menu extends events_1.EventEmitter {
      * Start an interaction collector and switch pages where required.
      */
     awaitButtons() {
-        this.buttonCollector = new discord_js_1.InteractionCollector(client, { filter: (i) => i.member.user.id === this.userID && i.channel.id === this.channel.id && i.isButton(), idle: this.ms });
+        this.buttonCollector = new discord_js_1.InteractionCollector(client, { filter: (i) => i.member.user.id === this.userID && i.channel.id === this.channel.id && i.isButton(), idle: this.ms, });
         // this.menu.createButtonCollector((button: { clicker: { id: any; }; }) => button.clicker.id === this.userID, { idle: this.ms })
         //@ts-ignore
         this.buttonCollector.on("end", (i, reason) => {
