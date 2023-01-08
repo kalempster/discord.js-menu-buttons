@@ -1,4 +1,4 @@
-import { ButtonInteraction, SelectMenuInteraction, Client, MessageEmbed, MessageSelectOptionData, MessageButton, TextChannel, Message, InteractionCollector, MessageActionRow, MessageSelectMenu, MessageButtonOptions, TextBasedChannel } from "discord.js";
+import { ButtonInteraction, SelectMenuInteraction, Client, EmbedBuilder, SelectMenuComponentOptionData, ButtonBuilder, Message, InteractionCollector, MessageActionRowComponent, SelectMenuBuilder, ButtonComponentData, TextBasedChannel, ActionRow, ActionRowBuilder } from "discord.js";
 import { EventEmitter } from "events"
 import { random } from "lodash"
 export type ButtonCallback = (btn: ButtonInteraction) => void
@@ -7,11 +7,6 @@ export type SelectCallback = (row: SelectMenuInteraction) => void
 let client: Client;
 
 
-
-/**
- * Initializes
- * @param {Client} c 
- */
 export function setClient(c: Client) {
     client = c;
 }
@@ -36,9 +31,9 @@ export class Row {
 }
 
 export class MenuOption {
-    listOption: MessageSelectOptionData;
+    listOption: SelectMenuComponentOptionData;
     callback: SelectCallback | string;
-    constructor(listOption: MessageSelectOptionData, callback: SelectCallback | string) {
+    constructor(listOption: SelectMenuComponentOptionData, callback: SelectCallback | string) {
         this.listOption = listOption;
         this.callback = callback;
     }
@@ -46,9 +41,9 @@ export class MenuOption {
 }
 
 export class ButtonOption {
-    listOption: MessageButtonOptions;
+    listOption: ButtonComponentData;
     callback: ButtonCallback | string;
-    constructor(listOption: MessageButtonOptions, callback: ButtonCallback | string) {
+    constructor(listOption: ButtonComponentData, callback: ButtonCallback | string) {
         this.listOption = listOption;
         this.callback = callback;
     }
@@ -61,10 +56,10 @@ export class ButtonOption {
  */
 export class Page {
     name: string;
-    content: MessageEmbed;
+    content: EmbedBuilder;
     rows: Row[];
     index?: number;
-    constructor(name: string, content: MessageEmbed, rows: Row[], index?: number) {
+    constructor(name: string, content: EmbedBuilder, rows: Row[], index?: number) {
         this.name = name
         this.content = content
         this.rows = rows
@@ -89,7 +84,7 @@ export class Menu extends EventEmitter {
     menu: Message;
     selectCollector: InteractionCollector<SelectMenuInteraction>;
     buttonCollector: InteractionCollector<ButtonInteraction>;
-    components: MessageActionRow[];
+    components: ActionRowBuilder<SelectMenuBuilder | ButtonBuilder>[];
     /**
      * 
      * @param channel A channel that the menu will be displayed in
@@ -193,6 +188,7 @@ export class Menu extends EventEmitter {
         //for some reason this shit doesn't set itself to true automatically after deleting the message, we'll do it for them
         //Alright now I know why this shit doesn't set itself to true automatically after deleting the message, because it was a buggy mess and they...
         //...finally deprecated it. Whatever I'll use it anyway
+        //@ts-ignore
         this.menu.deleted = true;
 
         if (this.selectCollector)
@@ -208,6 +204,7 @@ export class Menu extends EventEmitter {
         if (!this.menu) return;
         //If the menu is deleted, we cant set it's components to nothing because it doesnt exist anymore and we would...
         //...get the unknown message error from discord
+        //@ts-ignore
         if (!this.menu.deleted) {
             return await this.menu.edit({ embeds: [this.currentPage.content], components: [] }).catch(console.log);
         }
@@ -242,11 +239,9 @@ export class Menu extends EventEmitter {
         for (const row of this.currentPage.rows) {
             if (row.rowType == RowTypes.ButtonMenu)
                 //If the row type is buttons then we add a row to out row array with all of the buttons option
-                //@ts-ignore I ts-ignore here because typescript still thinks that we're not sure which type we're returning (even though we know it'll be button types)
-                this.components.push(new MessageActionRow().addComponents(row.buttons.map(btn => new MessageButton(btn.listOption))));
+                this.components.push(new ActionRowBuilder<ButtonBuilder>().addComponents(row.buttons.map(btn => new ButtonBuilder(btn.listOption))));
             else
-                //@ts-ignore
-                this.components.push(new MessageActionRow().addComponents(new MessageSelectMenu().setCustomId(randomButtonId()).addOptions(row.buttons.map(btn => btn.listOption))));
+                this.components.push(new ActionRowBuilder<SelectMenuBuilder>().addComponents(new SelectMenuBuilder().setCustomId(randomButtonId()).addOptions(row.buttons.map(btn => btn.listOption))));
         }
     }
 
@@ -254,31 +249,25 @@ export class Menu extends EventEmitter {
      * Start an interaction collector and switch pages where required
      */
     awaitMenu() {
-
-
-
         this.selectCollector = new InteractionCollector<SelectMenuInteraction>(client, { filter: (i) => i.member.user.id == this.userID && i.isSelectMenu(), idle: this.ms })
-        // this.menu.createMenuCollector((button: { clicker: { id: any; }; }) => button.clicker.id === this.userID, { idle: this.ms })
         //@ts-ignore
-        this.selectCollector.on('end', (i, reason: string) => {
+        this.selectCollector.on("end", (i, reason: string) => {
             if (reason != "clear")
                 return this.clearButtons().catch(console.log);
-        })
+        });
 
 
         this.selectCollector.on('collect', async (i) => {
-            // If the name exists, prioritise using that, otherwise, use the ID. If neither are in the list, don't run anything.
             let buttonIndex;
-            //@ts-ignore
             let row = this.currentPage.rows[this.currentPage.rows.findIndex(r => r.buttons[r.buttons.findIndex(opt => opt.listOption.value == i.values[0])])];
-            //@ts-ignore
             buttonIndex = row.buttons.findIndex(opt => opt.listOption.value == i.values[0]);
 
 
             if (buttonIndex != -1) {
                 if (typeof row.buttons[buttonIndex].callback === 'function') {
-                    //@ts-ignore this shit tells me that string is not callable bitch i just fucking checked if it's a function so stfu
-                    return row.buttons[buttonIndex].callback(i);
+                    //this shit tells me that string is not callable bitch i just fucking checked if it's a function so stfu
+                    // Well I added this comment before knowing ts magic, reading twitter really pays off sometimes lol
+                    return (row.buttons[buttonIndex].callback as Function)(i);
                 }
                 await i.deferUpdate();
                 switch (row.buttons[buttonIndex].callback) {
@@ -317,7 +306,6 @@ export class Menu extends EventEmitter {
      */
     awaitButtons() {
         this.buttonCollector = new InteractionCollector<ButtonInteraction>(client, { filter: (i) => i.member.user.id === this.userID && i.isButton(), idle: this.ms, })
-        // this.menu.createButtonCollector((button: { clicker: { id: any; }; }) => button.clicker.id === this.userID, { idle: this.ms })
 
         //@ts-ignore
         this.buttonCollector.on("end", (i, reason: string) => {
@@ -328,16 +316,13 @@ export class Menu extends EventEmitter {
 
         this.buttonCollector.on('collect', async (i) => {
             let buttonIndex;
-            //@ts-ignore
             let row = this.currentPage.rows[this.currentPage.rows.findIndex(r => r.buttons[r.buttons.findIndex(opt => opt.listOption.customId == i.customId)])];
-            //@ts-ignore
             buttonIndex = row.buttons.findIndex(opt => opt.listOption.customId == i.customId);
 
 
             if (buttonIndex != -1) {
                 if (typeof row.buttons[buttonIndex].callback === 'function') {
-                    //@ts-ignore this shit tells me that string is not callable bitch i just fucking checked if it's a function so stfu
-                    return row.buttons[buttonIndex].callback(i);
+                    return (row.buttons[buttonIndex].callback as Function)(i);
                 }
                 await i.deferUpdate();
 
