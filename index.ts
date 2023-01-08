@@ -1,8 +1,8 @@
-import { ButtonInteraction, SelectMenuInteraction, Client, EmbedBuilder, SelectMenuComponentOptionData, ButtonBuilder, Message, InteractionCollector, MessageActionRowComponent, SelectMenuBuilder, ButtonComponentData, TextBasedChannel, ActionRow, ActionRowBuilder } from "discord.js";
+import { ButtonInteraction, StringSelectMenuInteraction, Client, EmbedBuilder, SelectMenuComponentOptionData, ButtonBuilder, Message, InteractionCollector, MessageActionRowComponent, StringSelectMenuBuilder, ButtonComponentData, TextBasedChannel, ActionRow, ActionRowBuilder } from "discord.js";
 import { EventEmitter } from "events"
 import { random } from "lodash"
 export type ButtonCallback = (btn: ButtonInteraction) => void
-export type SelectCallback = (row: SelectMenuInteraction) => void
+export type SelectCallback = (row: StringSelectMenuInteraction) => void
 
 let client: Client;
 
@@ -82,9 +82,9 @@ export class Menu extends EventEmitter {
     pageIndex: number;
     buttons: MenuOption[];
     menu: Message;
-    selectCollector: InteractionCollector<SelectMenuInteraction>;
+    selectCollector: InteractionCollector<StringSelectMenuInteraction>;
     buttonCollector: InteractionCollector<ButtonInteraction>;
-    components: ActionRowBuilder<SelectMenuBuilder | ButtonBuilder>[];
+    components: ActionRowBuilder<StringSelectMenuBuilder | ButtonBuilder>[];
     /**
      * 
      * @param channel A channel that the menu will be displayed in
@@ -241,7 +241,7 @@ export class Menu extends EventEmitter {
                 //If the row type is buttons then we add a row to out row array with all of the buttons option
                 this.components.push(new ActionRowBuilder<ButtonBuilder>().addComponents(row.buttons.map(btn => new ButtonBuilder(btn.listOption))));
             else
-                this.components.push(new ActionRowBuilder<SelectMenuBuilder>().addComponents(new SelectMenuBuilder().setCustomId(randomButtonId()).addOptions(row.buttons.map(btn => btn.listOption))));
+                this.components.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(new StringSelectMenuBuilder().setCustomId(randomButtonId()).addOptions(row.buttons.map(btn => btn.listOption))));
         }
     }
 
@@ -249,7 +249,7 @@ export class Menu extends EventEmitter {
      * Start an interaction collector and switch pages where required
      */
     awaitMenu() {
-        this.selectCollector = new InteractionCollector<SelectMenuInteraction>(client, { filter: (i) => i.member.user.id == this.userID && i.isSelectMenu(), idle: this.ms })
+        this.selectCollector = new InteractionCollector<StringSelectMenuInteraction>(client, { filter: (i) => i.member.user.id == this.userID && i.isSelectMenu(), idle: this.ms })
         //@ts-ignore
         this.selectCollector.on("end", (i, reason: string) => {
             if (reason != "clear")

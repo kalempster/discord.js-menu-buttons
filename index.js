@@ -216,7 +216,7 @@ class Menu extends events_1.EventEmitter {
                 //If the row type is buttons then we add a row to out row array with all of the buttons option
                 this.components.push(new discord_js_1.ActionRowBuilder().addComponents(row.buttons.map(btn => new discord_js_1.ButtonBuilder(btn.listOption))));
             else
-                this.components.push(new discord_js_1.ActionRowBuilder().addComponents(new discord_js_1.SelectMenuBuilder().setCustomId(randomButtonId()).addOptions(row.buttons.map(btn => btn.listOption))));
+                this.components.push(new discord_js_1.ActionRowBuilder().addComponents(new discord_js_1.StringSelectMenuBuilder().setCustomId(randomButtonId()).addOptions(row.buttons.map(btn => btn.listOption))));
         }
     }
     /**

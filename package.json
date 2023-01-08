@@ -24,11 +24,11 @@
         "url": "https://github.com/kalempster/discord.js-menu-buttons/issues"
     },
     "homepage": "https://github.com/kalempster/discord.js-menu-buttons#readme",
-    "dependencies": {
-        "discord.js": "^14.1.2",
-        "lodash": "^4.17.21"
-    },
     "devDependencies": {
         "@types/lodash": "^4.14.175"
+    },
+    "dependencies": {
+        "discord.js": "^14.7.1",
+        "lodash": "^4.17.21"
     }
 }

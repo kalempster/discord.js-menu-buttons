@@ -1,7 +1,7 @@
-import { ButtonInteraction, SelectMenuInteraction, Client, EmbedBuilder, SelectMenuComponentOptionData, ButtonBuilder, Message, InteractionCollector, SelectMenuBuilder, ButtonComponentData, TextBasedChannel, ActionRowBuilder } from "discord.js";
+import { ButtonInteraction, StringSelectMenuInteraction, Client, EmbedBuilder, SelectMenuComponentOptionData, ButtonBuilder, Message, InteractionCollector, StringSelectMenuBuilder, ButtonComponentData, TextBasedChannel, ActionRowBuilder } from "discord.js";
 import { EventEmitter } from "events";
 export declare type ButtonCallback = (btn: ButtonInteraction) => void;
-export declare type SelectCallback = (row: SelectMenuInteraction) => void;
+export declare type SelectCallback = (row: StringSelectMenuInteraction) => void;
 export declare function setClient(c: Client): void;
 export declare enum RowTypes {
     SelectMenu = 0,
@@ -45,9 +45,9 @@ export declare class Menu extends EventEmitter {
     pageIndex: number;
     buttons: MenuOption[];
     menu: Message;
-    selectCollector: InteractionCollector<SelectMenuInteraction>;
+    selectCollector: InteractionCollector<StringSelectMenuInteraction>;
     buttonCollector: InteractionCollector<ButtonInteraction>;
-    components: ActionRowBuilder<SelectMenuBuilder | ButtonBuilder>[];
+    components: ActionRowBuilder<StringSelectMenuBuilder | ButtonBuilder>[];
     /**
      *
      * @param channel A channel that the menu will be displayed in
