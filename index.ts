@@ -160,7 +160,7 @@ export class Menu extends EventEmitter {
     /**
      * Stop listening for new events but without clearing buttons
      */
-    stopWithoutClearingButtons() {
+    async stopWithoutClearingButtons() {
         if (this.selectCollector)
             this.selectCollector.stop("clear")
         if (this.buttonCollector)
