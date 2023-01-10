@@ -1,6 +1,6 @@
 {
     "name": "discord.js-menu-buttons",
-    "version": "2.1.1",
+    "version": "2.1.2",
     "description": "Send menus with buttons or list",
     "main": "index.js",
     "scripts": {
