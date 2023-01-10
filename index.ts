@@ -230,6 +230,22 @@ export class Menu extends EventEmitter {
     }
 
     /**
+     * Add an array of Page objects to the menu.
+     * @param pages The pages being added to the menu.
+     */
+    addPages(pages: Array<Page>) {
+        this.pages = this.pages.concat(pages);
+    }
+
+    /**
+     * Delete a page from the menu.
+     * @param pageIndex The index of the page being deleted.
+     */
+    deletePage(pageIndex: number) {
+        this.pages.splice(pageIndex, 1);
+    }
+
+    /**
      * Add all of the rows to the page
      */
     addRows() {
